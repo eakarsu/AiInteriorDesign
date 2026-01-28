@@ -1,0 +1,223 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  avatar    String?
+  role      String   @default("user")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  designs       Design[]
+  subscriptions Subscription[]
+  aiGenerations AIGeneration[]
+  arSessions    ARSession[]
+  shoppingLists ShoppingList[]
+}
+
+model Design {
+  id          String   @id @default(uuid())
+  userId      String
+  name        String
+  description String?
+  thumbnail   String?
+  status      String   @default("draft")
+  style       String?
+  roomType    String?
+  budget      Float?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rooms     Room[]
+  furniture Furniture[]
+  palettes  ColorPalette[]
+}
+
+model Room {
+  id        String   @id @default(uuid())
+  designId  String
+  name      String
+  type      String
+  width     Float?
+  height    Float?
+  length    Float?
+  thumbnail String?
+  floorPlan String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  design    Design      @relation(fields: [designId], references: [id], onDelete: Cascade)
+  furniture Furniture[]
+  arSessions ARSession[]
+}
+
+model Furniture {
+  id          String   @id @default(uuid())
+  designId    String?
+  roomId      String?
+  name        String
+  category    String
+  style       String?
+  color       String?
+  material    String?
+  price       Float?
+  dimensions  String?
+  imageUrl    String?
+  modelUrl    String?
+  aiGenerated Boolean  @default(false)
+  storeUrl    String?
+  storeName   String?
+  sku         String?
+  inStock     Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  design            Design?            @relation(fields: [designId], references: [id], onDelete: Cascade)
+  room              Room?              @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  shoppingListItems ShoppingListItem[]
+}
+
+model ColorPalette {
+  id          String   @id @default(uuid())
+  designId    String?
+  name        String
+  colors      String
+  style       String?
+  mood        String?
+  aiGenerated Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  design Design? @relation(fields: [designId], references: [id], onDelete: Cascade)
+}
+
+model StylePreset {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  thumbnail   String?
+  colors      String?
+  furniture   String?
+  materials   String?
+  characteristics String?
+  popularity  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model AIGeneration {
+  id          String   @id @default(uuid())
+  userId      String
+  type        String
+  prompt      String
+  result      String?
+  imageUrl    String?
+  status      String   @default("pending")
+  model       String?
+  tokens      Int?
+  cost        Float?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ARSession {
+  id          String   @id @default(uuid())
+  userId      String
+  roomId      String?
+  name        String
+  status      String   @default("active")
+  sceneData   String?
+  thumbnail   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  room Room? @relation(fields: [roomId], references: [id], onDelete: Cascade)
+}
+
+model Subscription {
+  id           String   @id @default(uuid())
+  userId       String
+  plan         String
+  status       String   @default("active")
+  designsLeft  Int      @default(10)
+  startDate    DateTime @default(now())
+  endDate      DateTime?
+  price        Float
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Material {
+  id          String   @id @default(uuid())
+  name        String
+  category    String
+  texture     String?
+  color       String?
+  price       Float?
+  imageUrl    String?
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Inspiration {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  imageUrl    String
+  style       String?
+  roomType    String?
+  tags        String?
+  likes       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ShoppingList {
+  id          String   @id @default(uuid())
+  userId      String
+  designId    String?
+  name        String
+  description String?
+  totalPrice  Float    @default(0)
+  status      String   @default("active")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user  User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items ShoppingListItem[]
+}
+
+model ShoppingListItem {
+  id            String   @id @default(uuid())
+  shoppingListId String
+  furnitureId   String?
+  name          String
+  price         Float?
+  quantity      Int      @default(1)
+  purchased     Boolean  @default(false)
+  storeUrl      String?
+  storeName     String?
+  imageUrl      String?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  shoppingList ShoppingList @relation(fields: [shoppingListId], references: [id], onDelete: Cascade)
+  furniture    Furniture?   @relation(fields: [furnitureId], references: [id], onDelete: SetNull)
+}
