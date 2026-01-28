@@ -1,25 +1,46 @@
+# ================================
 # Dependencies
+# ================================
 node_modules/
 .pnp/
 .pnp.js
+.yarn/
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+bower_components/
 
-# Build outputs
+# ================================
+# Build Outputs
+# ================================
 dist/
 build/
 out/
 .next/
 .nuxt/
 .output/
+.svelte-kit/
+.vercel/
+.netlify/
+*.tgz
 
-# Environment files
+# ================================
+# Environment Files
+# ================================
 .env
+.env.*
+!.env.example
+!.env.template
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
-.env*.local
 
+# ================================
 # Logs
+# ================================
 logs/
 *.log
 npm-debug.log*
@@ -27,99 +48,251 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+.pnpm-debug.log*
 
-# Runtime data
+# ================================
+# Runtime Data
+# ================================
 pids/
 *.pid
 *.seed
 *.pid.lock
 
-# Coverage and testing
+# ================================
+# Coverage and Testing
+# ================================
 coverage/
 *.lcov
 .nyc_output/
 lib-cov/
 .jest/
+jest-results/
+test-results/
+playwright-report/
+playwright/.cache/
+cypress/screenshots/
+cypress/videos/
+cypress/downloads/
 
+# ================================
 # Caches
+# ================================
 .cache/
 .parcel-cache/
 .vite/
+.turbo/
+.rollup.cache/
 *.tsbuildinfo
 .eslintcache
 .stylelintcache
+.prettiercache
+.npm/
+.pnpm-store/
 
-# IDE and editors
-.idea/
+# ================================
+# IDE and Editors
+# ================================
+# VS Code
 .vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# JetBrains (WebStorm, IntelliJ, etc.)
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Vim/Neovim
 *.swp
 *.swo
+*.swn
 *~
+.vim/
+.nvim/
+Session.vim
+.netrwhist
+tags
+
+# Sublime Text
 *.sublime-workspace
 *.sublime-project
+
+# Eclipse
 .project
 .classpath
 .settings/
+.metadata/
 
+# Emacs
+*~
+\#*\#
+.#*
+*.elc
+auto-save-list/
+
+# ================================
 # macOS
+# ================================
 .DS_Store
 .AppleDouble
 .LSOverride
 ._*
 .Spotlight-V100
 .Trashes
+.fseventsd
+.TemporaryItems
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
 
+# ================================
 # Windows
+# ================================
 Thumbs.db
+Thumbs.db:encryptable
 ehthumbs.db
+ehthumbs_vista.db
 Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
 
+# ================================
 # Linux
+# ================================
 *~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
 
+# ================================
 # Prisma
+# ================================
 prisma/*.db
 prisma/*.db-journal
+prisma/migrations/.migration_lock.toml
 
-# Temporary files
-tmp/
-temp/
-*.tmp
-*.temp
+# ================================
+# Database
+# ================================
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+*.sql.gz
+*.sql.zip
+dump.rdb
 
-# Optional npm cache directory
-.npm/
-
-# Optional eslint cache
-.eslintcache
-
-# Optional stylelint cache
-.stylelintcache
-
+# ================================
 # TypeScript
+# ================================
 *.tsbuildinfo
+tsconfig.tsbuildinfo
 
+# ================================
 # Debug
+# ================================
 .debug/
+debug.log
 
-# Local development
-*.local
-
-# Secrets and credentials
+# ================================
+# Secrets and Credentials
+# ================================
 *.pem
 *.key
 *.crt
 *.p12
+*.pfx
+*.jks
+*.keystore
 secrets/
 credentials/
+.secrets
+serviceAccountKey.json
+*-credentials.json
+*_credentials.json
+firebase-adminsdk*.json
 
-# Uploaded files (if applicable)
+# ================================
+# Docker
+# ================================
+docker-compose.override.yml
+.docker/
+
+# ================================
+# Uploaded Files
+# ================================
 uploads/
 public/uploads/
+static/uploads/
+storage/
 
-# Claude Code
+# ================================
+# Generated Files
+# ================================
+*.generated.*
+*.auto.*
+generated/
+.generated/
+
+# ================================
+# AI Tools
+# ================================
 .claude/
+.cursor/
+.aider*
+.continue/
+.copilot/
 
-# Misc
+# ================================
+# Temporary Files
+# ================================
+tmp/
+temp/
+*.tmp
+*.temp
 *.bak
 *.backup
+*.old
+*.orig
+*.rej
+
+# ================================
+# Serverless
+# ================================
+.serverless/
+.aws-sam/
+
+# ================================
+# Terraform
+# ================================
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
+# ================================
+# Misc
+# ================================
+*.local
+.history/
+.ionide/
+.fusebox/
+.dynamodb/
+.tern-port
+.grunt
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+*.chunk.js.map
+
+# ================================
+# Project Specific
+# ================================
+# Add any project-specific ignores below
