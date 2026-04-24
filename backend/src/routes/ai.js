@@ -20,7 +20,7 @@ async function callOpenRouter(messages, model = process.env.OPENROUTER_MODEL || 
     body: JSON.stringify({
       model,
       messages,
-      max_tokens: 2000,
+      max_tokens: 10000,
       temperature: 0.7
     })
   });
@@ -31,6 +31,13 @@ async function callOpenRouter(messages, model = process.env.OPENROUTER_MODEL || 
   }
 
   return response.json();
+}
+
+// Strip markdown code blocks from AI responses
+function stripCodeBlocks(content) {
+  if (!content) return content;
+  // Remove ```json ... ``` or ``` ... ``` wrappers
+  return content.replace(/```(?:json)?\s*/gi, '').replace(/```\s*/g, '');
 }
 
 // Rate limiting for image generation
@@ -232,7 +239,7 @@ Provide a JSON response with:
       { role: 'user', content: prompt }
     ]);
 
-    const content = aiResponse.choices[0].message.content;
+    const content = stripCodeBlocks(aiResponse.choices[0].message.content);
     let designSuggestion;
 
     try {
@@ -297,7 +304,7 @@ Respond with JSON:
       { role: 'user', content: prompt }
     ]);
 
-    const content = aiResponse.choices[0].message.content;
+    const content = stripCodeBlocks(aiResponse.choices[0].message.content);
     let palette;
 
     try {
@@ -361,7 +368,7 @@ Respond with JSON:
       { role: 'user', content: prompt }
     ]);
 
-    const content = aiResponse.choices[0].message.content;
+    const content = stripCodeBlocks(aiResponse.choices[0].message.content);
     let recommendations;
 
     try {
@@ -424,7 +431,7 @@ Respond with JSON:
       { role: 'user', content: prompt }
     ]);
 
-    const content = aiResponse.choices[0].message.content;
+    const content = stripCodeBlocks(aiResponse.choices[0].message.content);
     let analysis;
 
     try {
@@ -493,7 +500,7 @@ Respond with JSON:
       { role: 'user', content: prompt }
     ]);
 
-    const content = aiResponse.choices[0].message.content;
+    const content = stripCodeBlocks(aiResponse.choices[0].message.content);
     let styleGuide;
 
     try {
@@ -559,6 +566,313 @@ router.get('/history/:id', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Get generation error:', error);
     res.status(500).json({ error: 'Failed to get generation' });
+  }
+});
+
+// AI Style Matcher - Match user preferences to interior design styles
+router.post('/match-style', authenticateToken, async (req, res) => {
+  try {
+    const { preferences, lifestyle, colorPreferences, spaceType, budgetRange } = req.body;
+
+    const prompt = `As an expert interior design style consultant, analyze these user preferences and match them to the best interior design styles:
+
+User Profile:
+- General Preferences: ${preferences || 'Not specified'}
+- Lifestyle: ${lifestyle || 'Not specified'}
+- Color Preferences: ${colorPreferences || 'No specific preference'}
+- Space Type: ${spaceType || 'General living space'}
+- Budget Range: ${budgetRange || 'Flexible'}
+
+Provide a detailed style matching analysis in JSON format:
+{
+  "primaryMatch": {
+    "styleName": "best matching style name",
+    "matchScore": 95,
+    "description": "why this style matches perfectly",
+    "keyCharacteristics": ["char1", "char2", "char3"],
+    "recommendedColors": ["#hex1", "#hex2", "#hex3", "#hex4", "#hex5"],
+    "typicalMaterials": ["material1", "material2"],
+    "priceRange": "$X,XXX - $XX,XXX"
+  },
+  "alternativeMatches": [
+    {
+      "styleName": "alternative style",
+      "matchScore": 85,
+      "whyItFits": "reason",
+      "keyDifference": "what makes it different"
+    }
+  ],
+  "styleBlendSuggestion": {
+    "combination": "Style A + Style B",
+    "description": "how to blend styles effectively",
+    "ratio": "70/30 blend recommendation"
+  },
+  "personalizedTips": ["tip1", "tip2", "tip3"],
+  "avoidStyles": [
+    {
+      "styleName": "style to avoid",
+      "reason": "why it doesn't match"
+    }
+  ]
+}`;
+
+    const aiResponse = await callOpenRouter([
+      { role: 'system', content: 'You are an expert interior design style consultant. Always respond with valid JSON.' },
+      { role: 'user', content: prompt }
+    ]);
+
+    const content = stripCodeBlocks(aiResponse.choices[0].message.content);
+    let styleMatch;
+
+    try {
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      styleMatch = jsonMatch ? JSON.parse(jsonMatch[0]) : { raw: content };
+    } catch {
+      styleMatch = { raw: content };
+    }
+
+    await prisma.aIGeneration.create({
+      data: {
+        userId: req.user.id,
+        type: 'style-match',
+        prompt: JSON.stringify({ preferences, lifestyle, colorPreferences, spaceType, budgetRange }),
+        result: JSON.stringify(styleMatch),
+        status: 'completed',
+        model: process.env.OPENROUTER_MODEL || 'anthropic/claude-haiku-4.5',
+        tokens: aiResponse.usage?.total_tokens || 0
+      }
+    });
+
+    res.json({ success: true, styleMatch });
+  } catch (error) {
+    console.error('Style match error:', error);
+    res.status(500).json({ error: 'Failed to match style', message: error.message });
+  }
+});
+
+// AI Budget Planner - Create detailed budget breakdown for interior design
+router.post('/plan-budget', authenticateToken, async (req, res) => {
+  try {
+    const { totalBudget, roomType, style, priorities, existingItems, timeline } = req.body;
+
+    const prompt = `As an expert interior design budget planner, create a comprehensive budget plan:
+
+Project Details:
+- Total Budget: $${totalBudget || 10000}
+- Room Type: ${roomType || 'Living Room'}
+- Desired Style: ${style || 'Modern'}
+- Priorities: ${priorities || 'Quality furniture, good lighting'}
+- Existing Items to Keep: ${existingItems || 'None specified'}
+- Timeline: ${timeline || 'Flexible'}
+
+Create a detailed budget breakdown in JSON format:
+{
+  "budgetSummary": {
+    "totalBudget": ${totalBudget || 10000},
+    "recommendedSpend": X,
+    "contingencyFund": X,
+    "potentialSavings": X
+  },
+  "categoryBreakdown": [
+    {
+      "category": "Furniture",
+      "allocation": 5000,
+      "percentage": 50,
+      "priority": "high",
+      "items": [
+        {
+          "item": "Sofa",
+          "budgetRange": "$1,500 - $2,500",
+          "recommendedBrand": "brand suggestion",
+          "savingTip": "how to save money"
+        }
+      ]
+    },
+    {
+      "category": "Lighting",
+      "allocation": 1000,
+      "percentage": 10,
+      "priority": "medium",
+      "items": []
+    }
+  ],
+  "phaseTimeline": [
+    {
+      "phase": 1,
+      "name": "Essential Furniture",
+      "budget": 4000,
+      "duration": "Month 1-2",
+      "items": ["item1", "item2"]
+    }
+  ],
+  "savingStrategies": [
+    {
+      "strategy": "strategy name",
+      "potentialSavings": "$500-1000",
+      "implementation": "how to implement"
+    }
+  ],
+  "splurgeVsSave": {
+    "worthSplurging": ["item1 - reason", "item2 - reason"],
+    "okayToSave": ["item1 - reason", "item2 - reason"]
+  },
+  "hiddenCosts": ["cost1", "cost2"],
+  "budgetWarnings": ["warning1", "warning2"]
+}`;
+
+    const aiResponse = await callOpenRouter([
+      { role: 'system', content: 'You are an expert interior design budget planner. Always respond with valid JSON.' },
+      { role: 'user', content: prompt }
+    ]);
+
+    const content = stripCodeBlocks(aiResponse.choices[0].message.content);
+    let budgetPlan;
+
+    try {
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      budgetPlan = jsonMatch ? JSON.parse(jsonMatch[0]) : { raw: content };
+    } catch {
+      budgetPlan = { raw: content };
+    }
+
+    await prisma.aIGeneration.create({
+      data: {
+        userId: req.user.id,
+        type: 'budget-plan',
+        prompt: JSON.stringify({ totalBudget, roomType, style, priorities, existingItems, timeline }),
+        result: JSON.stringify(budgetPlan),
+        status: 'completed',
+        model: process.env.OPENROUTER_MODEL || 'anthropic/claude-haiku-4.5',
+        tokens: aiResponse.usage?.total_tokens || 0
+      }
+    });
+
+    res.json({ success: true, budgetPlan });
+  } catch (error) {
+    console.error('Budget plan error:', error);
+    res.status(500).json({ error: 'Failed to create budget plan', message: error.message });
+  }
+});
+
+// AI Before/After Visualizer - Generate transformation suggestions
+router.post('/visualize-transformation', authenticateToken, async (req, res) => {
+  try {
+    const { currentState, desiredStyle, budget, constraints, mustKeep } = req.body;
+
+    const prompt = `As an expert interior design transformation specialist, analyze the current room and create a detailed before/after transformation plan:
+
+Current Room State:
+${currentState || 'Standard living room with basic furniture'}
+
+Desired Style: ${desiredStyle || 'Modern Minimalist'}
+Budget: $${budget || 15000}
+Constraints: ${constraints || 'None specified'}
+Items to Keep: ${mustKeep || 'None specified'}
+
+Create a comprehensive transformation plan in JSON format:
+{
+  "transformationOverview": {
+    "title": "Transformation Title",
+    "tagline": "Brief inspiring description",
+    "transformationScore": 85,
+    "estimatedBudget": ${budget || 15000},
+    "timelineWeeks": 4
+  },
+  "beforeAnalysis": {
+    "currentStyle": "identified current style",
+    "strengths": ["strength1", "strength2"],
+    "painPoints": ["issue1", "issue2"],
+    "potentialScore": 40
+  },
+  "afterVision": {
+    "targetStyle": "${desiredStyle || 'Modern Minimalist'}",
+    "keyImprovements": ["improvement1", "improvement2", "improvement3"],
+    "moodDescription": "how the space will feel",
+    "targetScore": 90
+  },
+  "transformationSteps": [
+    {
+      "step": 1,
+      "title": "Step title",
+      "description": "What to do",
+      "category": "Furniture/Decor/Lighting/Color",
+      "impact": "high/medium/low",
+      "cost": 1000,
+      "beforeState": "current condition",
+      "afterState": "transformed condition"
+    }
+  ],
+  "colorTransformation": {
+    "before": ["#current1", "#current2"],
+    "after": ["#new1", "#new2", "#new3", "#new4", "#new5"],
+    "transitionTips": "how to transition colors"
+  },
+  "furnitureChanges": {
+    "remove": [{"item": "item to remove", "reason": "why"}],
+    "keep": [{"item": "item to keep", "modification": "any modifications"}],
+    "add": [{"item": "new item", "purpose": "why needed", "budget": 500}]
+  },
+  "lightingPlan": {
+    "current": "current lighting assessment",
+    "proposed": "proposed lighting changes",
+    "fixtures": [{"type": "fixture type", "location": "where", "impact": "what it achieves"}]
+  },
+  "impactMetrics": {
+    "aestheticImprovement": 75,
+    "functionalityGain": 60,
+    "comfortIncrease": 80,
+    "valueAdd": 40
+  },
+  "quickWins": ["quick win 1", "quick win 2", "quick win 3"],
+  "biggestImpactChanges": ["change 1", "change 2"]
+}`;
+
+    const aiResponse = await callOpenRouter([
+      { role: 'system', content: 'You are an expert interior design transformation specialist. Always respond with valid JSON.' },
+      { role: 'user', content: prompt }
+    ]);
+
+    const content = stripCodeBlocks(aiResponse.choices[0].message.content);
+    let transformation;
+
+    try {
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      transformation = jsonMatch ? JSON.parse(jsonMatch[0]) : { raw: content };
+    } catch {
+      transformation = { raw: content };
+    }
+
+    // Generate before and after images
+    const beforeImagePrompt = `Interior design photograph of ${currentState || 'a standard outdated living room'}, needs renovation, realistic photo`;
+    const afterImagePrompt = `Professional interior design photograph of a beautiful ${desiredStyle || 'Modern Minimalist'} room, high-end architectural photography, elegant designer furniture, natural lighting, photorealistic, 8k quality, award-winning interior design`;
+
+    let beforeImageUrl = null;
+    let afterImageUrl = null;
+
+    // Generate after image (main transformation result)
+    afterImageUrl = await generateImage(currentState || 'Living Room', desiredStyle || 'Modern Minimalist', req.user.id);
+
+    if (afterImageUrl) {
+      transformation.afterImageUrl = afterImageUrl;
+    }
+
+    await prisma.aIGeneration.create({
+      data: {
+        userId: req.user.id,
+        type: 'transformation',
+        prompt: JSON.stringify({ currentState, desiredStyle, budget, constraints, mustKeep }),
+        result: JSON.stringify(transformation),
+        imageUrl: afterImageUrl,
+        status: 'completed',
+        model: process.env.OPENROUTER_MODEL || 'anthropic/claude-haiku-4.5',
+        tokens: aiResponse.usage?.total_tokens || 0
+      }
+    });
+
+    res.json({ success: true, transformation });
+  } catch (error) {
+    console.error('Transformation error:', error);
+    res.status(500).json({ error: 'Failed to visualize transformation', message: error.message });
   }
 });
 

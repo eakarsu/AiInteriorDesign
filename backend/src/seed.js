@@ -9,6 +9,8 @@ async function seed() {
 
   // Clear existing data
   console.log('Clearing existing data...');
+  await prisma.shoppingListItem.deleteMany();
+  await prisma.shoppingList.deleteMany();
   await prisma.aIGeneration.deleteMany();
   await prisma.aRSession.deleteMany();
   await prisma.subscription.deleteMany();
@@ -16,6 +18,7 @@ async function seed() {
   await prisma.colorPalette.deleteMany();
   await prisma.room.deleteMany();
   await prisma.design.deleteMany();
+  await prisma.passwordResetToken.deleteMany();
   await prisma.user.deleteMany();
   await prisma.stylePreset.deleteMany();
   await prisma.material.deleteMany();
@@ -257,23 +260,90 @@ async function seed() {
     { userId: demoUser.id, type: 'palette', prompt: JSON.stringify({ mood: 'Serene', style: 'Japanese' }), result: JSON.stringify({ paletteName: 'Zen Garden' }), status: 'completed', model: 'anthropic/claude-3-haiku', tokens: 390 }
   ].map(gen => prisma.aIGeneration.create({ data: gen })));
 
+  // Create 15+ Shopping Lists
+  console.log('Creating shopping lists...');
+  const shoppingLists = await Promise.all([
+    { userId: demoUser.id, designId: designs[0].id, name: 'Modern Living Room Essentials', description: 'Complete shopping list for modern living room', totalPrice: 8500, status: 'active' },
+    { userId: demoUser.id, designId: designs[1].id, name: 'Farmhouse Kitchen Items', description: 'Rustic kitchen essentials', totalPrice: 6200, status: 'active' },
+    { userId: demoUser.id, designId: designs[2].id, name: 'Coastal Bedroom Setup', description: 'Beach-inspired bedroom furniture', totalPrice: 4800, status: 'completed' },
+    { userId: demoUser.id, designId: designs[3].id, name: 'Industrial Office Must-Haves', description: 'Urban workspace essentials', totalPrice: 3500, status: 'active' },
+    { userId: demoUser.id, designId: designs[4].id, name: 'Zen Meditation Corner', description: 'Peaceful retreat items', totalPrice: 1200, status: 'completed' },
+    { userId: demoUser.id, designId: designs[5].id, name: 'Luxury Master Suite', description: 'Premium bedroom collection', totalPrice: 15000, status: 'active' },
+    { userId: demoUser.id, designId: designs[6].id, name: 'Mid-Century Game Room', description: 'Retro entertainment furniture', totalPrice: 7800, status: 'active' },
+    { userId: demoUser.id, designId: designs[7].id, name: 'Bohemian Studio Decor', description: 'Eclectic creative space items', totalPrice: 2400, status: 'completed' },
+    { userId: demoUser.id, designId: designs[8].id, name: 'Scandinavian Kitchen Upgrade', description: 'Nordic kitchen essentials', totalPrice: 9500, status: 'active' },
+    { userId: demoUser.id, designId: designs[9].id, name: 'Traditional Study Collection', description: 'Classic library pieces', totalPrice: 11000, status: 'active' },
+    { userId: demoUser.id, designId: null, name: 'Quick Bedroom Refresh', description: 'Budget-friendly bedroom update', totalPrice: 800, status: 'completed' },
+    { userId: demoUser.id, designId: null, name: 'Home Office Basics', description: 'Work from home essentials', totalPrice: 2000, status: 'active' },
+    { userId: demoUser.id, designId: null, name: 'Outdoor Patio Furniture', description: 'Summer entertaining setup', totalPrice: 3500, status: 'active' },
+    { userId: demoUser.id, designId: null, name: 'Kids Room Makeover', description: 'Fun and functional kids furniture', totalPrice: 1800, status: 'active' },
+    { userId: demoUser.id, designId: null, name: 'Entryway Essentials', description: 'First impressions matter', totalPrice: 900, status: 'completed' },
+    { userId: demoUser.id, designId: null, name: 'Bathroom Spa Upgrade', description: 'Luxury bathroom accessories', totalPrice: 1500, status: 'active' }
+  ].map(list => prisma.shoppingList.create({ data: list })));
+
+  // Create 15+ Shopping List Items per list (for first few lists)
+  console.log('Creating shopping list items...');
+  const shoppingListItems = await Promise.all([
+    // Items for first shopping list
+    { shoppingListId: shoppingLists[0].id, name: 'Modular Sectional Sofa', price: 3500, quantity: 1, purchased: true, storeName: 'West Elm', storeUrl: 'https://westelm.com' },
+    { shoppingListId: shoppingLists[0].id, name: 'Glass Coffee Table', price: 899, quantity: 1, purchased: true, storeName: 'CB2', storeUrl: 'https://cb2.com' },
+    { shoppingListId: shoppingLists[0].id, name: 'Arc Floor Lamp', price: 450, quantity: 1, purchased: false, storeName: 'Amazon', storeUrl: 'https://amazon.com' },
+    { shoppingListId: shoppingLists[0].id, name: 'Minimalist Rug 8x10', price: 800, quantity: 1, purchased: false, storeName: 'Ruggable', storeUrl: 'https://ruggable.com' },
+    { shoppingListId: shoppingLists[0].id, name: 'Throw Pillows Set', price: 120, quantity: 2, purchased: true, storeName: 'Target', storeUrl: 'https://target.com' },
+    { shoppingListId: shoppingLists[0].id, name: 'Wall Art Print', price: 250, quantity: 3, purchased: false, storeName: 'Society6', storeUrl: 'https://society6.com' },
+    { shoppingListId: shoppingLists[0].id, name: 'Indoor Plant Set', price: 150, quantity: 1, purchased: true, storeName: 'The Sill', storeUrl: 'https://thesill.com' },
+    // Items for second shopping list
+    { shoppingListId: shoppingLists[1].id, name: 'Farmhouse Dining Table', price: 2200, quantity: 1, purchased: false, storeName: 'Pottery Barn', storeUrl: 'https://potterybarn.com' },
+    { shoppingListId: shoppingLists[1].id, name: 'Windsor Dining Chairs', price: 200, quantity: 6, purchased: false, storeName: 'Wayfair', storeUrl: 'https://wayfair.com' },
+    { shoppingListId: shoppingLists[1].id, name: 'Rustic Pendant Light', price: 350, quantity: 2, purchased: true, storeName: 'Etsy', storeUrl: 'https://etsy.com' },
+    { shoppingListId: shoppingLists[1].id, name: 'Kitchen Island Cart', price: 600, quantity: 1, purchased: false, storeName: 'IKEA', storeUrl: 'https://ikea.com' },
+    { shoppingListId: shoppingLists[1].id, name: 'Ceramic Dinnerware Set', price: 180, quantity: 1, purchased: true, storeName: 'Crate & Barrel', storeUrl: 'https://crateandbarrel.com' },
+    // Items for third shopping list
+    { shoppingListId: shoppingLists[2].id, name: 'Rattan Platform Bed', price: 1800, quantity: 1, purchased: true, storeName: 'Article', storeUrl: 'https://article.com' },
+    { shoppingListId: shoppingLists[2].id, name: 'Linen Bedding Set', price: 400, quantity: 1, purchased: true, storeName: 'Brooklinen', storeUrl: 'https://brooklinen.com' },
+    { shoppingListId: shoppingLists[2].id, name: 'Coastal Nightstands', price: 550, quantity: 2, purchased: true, storeName: 'Serena & Lily', storeUrl: 'https://serenaandlily.com' },
+    { shoppingListId: shoppingLists[2].id, name: 'Woven Jute Rug', price: 350, quantity: 1, purchased: true, storeName: 'World Market', storeUrl: 'https://worldmarket.com' }
+  ].map(item => prisma.shoppingListItem.create({ data: item })));
+
+  // Create additional AI generations for new features
+  console.log('Creating additional AI generation history...');
+  const additionalAIGenerations = await Promise.all([
+    // Style Match generations
+    { userId: demoUser.id, type: 'style-match', prompt: JSON.stringify({ lifestyle: 'minimalist', colorPreferences: 'neutral' }), result: JSON.stringify({ primaryMatch: { styleName: 'Modern Minimalist', matchScore: 95 } }), status: 'completed', model: 'anthropic/claude-haiku-4.5', tokens: 650 },
+    { userId: demoUser.id, type: 'style-match', prompt: JSON.stringify({ lifestyle: 'family-oriented', colorPreferences: 'warm' }), result: JSON.stringify({ primaryMatch: { styleName: 'Farmhouse', matchScore: 88 } }), status: 'completed', model: 'anthropic/claude-haiku-4.5', tokens: 720 },
+    { userId: demoUser.id, type: 'style-match', prompt: JSON.stringify({ lifestyle: 'creative', colorPreferences: 'bold' }), result: JSON.stringify({ primaryMatch: { styleName: 'Bohemian', matchScore: 92 } }), status: 'completed', model: 'anthropic/claude-haiku-4.5', tokens: 680 },
+    // Budget Plan generations
+    { userId: demoUser.id, type: 'budget-plan', prompt: JSON.stringify({ totalBudget: 15000, roomType: 'Living Room' }), result: JSON.stringify({ budgetSummary: { totalBudget: 15000, recommendedSpend: 13500 } }), status: 'completed', model: 'anthropic/claude-haiku-4.5', tokens: 890 },
+    { userId: demoUser.id, type: 'budget-plan', prompt: JSON.stringify({ totalBudget: 25000, roomType: 'Entire Home' }), result: JSON.stringify({ budgetSummary: { totalBudget: 25000, recommendedSpend: 22000 } }), status: 'completed', model: 'anthropic/claude-haiku-4.5', tokens: 1100 },
+    { userId: demoUser.id, type: 'budget-plan', prompt: JSON.stringify({ totalBudget: 5000, roomType: 'Bedroom' }), result: JSON.stringify({ budgetSummary: { totalBudget: 5000, recommendedSpend: 4500 } }), status: 'completed', model: 'anthropic/claude-haiku-4.5', tokens: 780 },
+    // Transformation generations
+    { userId: demoUser.id, type: 'transformation', prompt: JSON.stringify({ currentState: 'Outdated living room', desiredStyle: 'Modern' }), result: JSON.stringify({ transformationOverview: { title: 'Modern Makeover', transformationScore: 85 } }), status: 'completed', model: 'anthropic/claude-haiku-4.5', tokens: 950 },
+    { userId: demoUser.id, type: 'transformation', prompt: JSON.stringify({ currentState: 'Plain bedroom', desiredStyle: 'Scandinavian' }), result: JSON.stringify({ transformationOverview: { title: 'Nordic Retreat', transformationScore: 78 } }), status: 'completed', model: 'anthropic/claude-haiku-4.5', tokens: 920 },
+    { userId: demoUser.id, type: 'transformation', prompt: JSON.stringify({ currentState: 'Dark office', desiredStyle: 'Industrial' }), result: JSON.stringify({ transformationOverview: { title: 'Urban Workspace', transformationScore: 82 } }), status: 'completed', model: 'anthropic/claude-haiku-4.5', tokens: 880 }
+  ].map(gen => prisma.aIGeneration.create({ data: gen })));
+
   console.log('Seed completed successfully!');
   console.log(`
-Summary:
-- Users: 3 (including demo user)
-- Style Presets: ${stylePresets.length}
-- Materials: ${materials.length}
-- Inspirations: ${inspirations.length}
-- Designs: ${designs.length}
-- Rooms: ${rooms.length}
-- Furniture: ${furnitureItems.length}
-- Color Palettes: ${palettes.length}
-- AR Sessions: ${arSessions.length}
-- AI Generations: ${aiGenerations.length}
-
-Demo credentials:
-- Email: ${process.env.DEMO_EMAIL || 'demo@aiinterior.com'}
-- Password: ${process.env.DEMO_PASSWORD || 'demo123456'}
+╔═══════════════════════════════════════════════════════════════╗
+║                    Seed Summary                               ║
+╠═══════════════════════════════════════════════════════════════╣
+║  Users:              3 (including demo user)                  ║
+║  Style Presets:      ${stylePresets.length.toString().padEnd(10)}                             ║
+║  Materials:          ${materials.length.toString().padEnd(10)}                             ║
+║  Inspirations:       ${inspirations.length.toString().padEnd(10)}                             ║
+║  Designs:            ${designs.length.toString().padEnd(10)}                             ║
+║  Rooms:              ${rooms.length.toString().padEnd(10)}                             ║
+║  Furniture:          ${furnitureItems.length.toString().padEnd(10)}                             ║
+║  Color Palettes:     ${palettes.length.toString().padEnd(10)}                             ║
+║  AR Sessions:        ${arSessions.length.toString().padEnd(10)}                             ║
+║  Shopping Lists:     ${shoppingLists.length.toString().padEnd(10)}                             ║
+║  Shopping Items:     ${shoppingListItems.length.toString().padEnd(10)}                             ║
+║  AI Generations:     ${(aiGenerations.length + additionalAIGenerations.length).toString().padEnd(10)}                             ║
+╠═══════════════════════════════════════════════════════════════╣
+║  Demo credentials:                                            ║
+║    Email:    ${(process.env.DEMO_EMAIL || 'demo@aiinterior.com').padEnd(36)}     ║
+║    Password: ${(process.env.DEMO_PASSWORD || 'demo123456').padEnd(36)}     ║
+╚═══════════════════════════════════════════════════════════════╝
   `);
 }
 
