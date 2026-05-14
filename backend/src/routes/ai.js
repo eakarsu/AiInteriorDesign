@@ -909,4 +909,391 @@ router.post('/generate-image', authenticateToken, async (req, res) => {
   }
 });
 
+// AI: Trend Forecaster
+router.post('/trend-forecaster', authenticateToken, async (req, res) => {
+  try {
+    const { region, room_type, time_horizon_months, demographics, current_style_preferences } = req.body || {};
+    const horizon = parseInt(time_horizon_months) || 12;
+
+    const prompt = `You are an interior design trend forecaster. Predict trends for ${room_type || 'general residential interiors'} in ${region || 'global / North America'} over the next ${horizon} months.
+
+User-stated preferences: ${current_style_preferences || 'none specified'}
+Target demographic: ${demographics || 'not specified'}
+
+Respond with valid JSON:
+{
+  "headline_trends": [{ "name": string, "summary": string, "confidence_0_100": number, "early_or_peak": "early|emerging|peaking|fading" }],
+  "color_palette_trends": [{ "name": string, "hex_codes": [string], "associated_moods": [string] }],
+  "material_trends": [{ "material": string, "rationale": string }],
+  "furniture_trends": [{ "category": string, "shape_or_form": string, "example_pieces": [string] }],
+  "patterns_and_textures": [string],
+  "anti_trends": [string],
+  "early_adoption_recommendations": [string],
+  "long_term_caution_list": [string],
+  "summary": string
+}`;
+
+    const aiResponse = await callOpenRouter([
+      { role: 'system', content: 'You are an expert interior design trend forecaster. Always respond with valid JSON.' },
+      { role: 'user', content: prompt }
+    ]);
+    const content = stripCodeBlocks(aiResponse.choices[0].message.content);
+    let parsed;
+    try {
+      const m = content.match(/\{[\s\S]*\}/);
+      parsed = m ? JSON.parse(m[0]) : { raw: content };
+    } catch { parsed = { raw: content }; }
+
+    await prisma.aIGeneration.create({
+      data: {
+        userId: req.user.id,
+        type: 'trend-forecast',
+        prompt: JSON.stringify({ region, room_type, time_horizon_months: horizon, demographics, current_style_preferences }),
+        result: JSON.stringify(parsed),
+        status: 'completed',
+        model: process.env.OPENROUTER_MODEL || 'anthropic/claude-haiku-4.5',
+        tokens: aiResponse.usage?.total_tokens || 0,
+      },
+    }).catch(() => {});
+
+    res.json({ success: true, forecast: parsed });
+  } catch (error) {
+    console.error('Trend forecaster error:', error);
+    res.status(500).json({ error: 'Failed to forecast trends', message: error.message });
+  }
+});
+
+// AI: Room Optimizer (layout / flow)
+router.post('/room-optimizer', authenticateToken, async (req, res) => {
+  try {
+    const { roomType, dimensions, doorways, windows, focal_points, current_furniture, traffic_priorities, constraints } = req.body || {};
+
+    const prompt = `You are a residential layout optimization expert. Optimize the layout of this room for traffic flow, focal points, natural light, and conversation/work zones.
+
+Room type: ${roomType || 'unspecified'}
+Dimensions (LxWxH or notes): ${dimensions || 'unspecified'}
+Doorways: ${doorways || 'unspecified'}
+Windows: ${windows || 'unspecified'}
+Focal points (fireplace, TV, view, etc.): ${focal_points || 'none specified'}
+Current furniture: ${current_furniture || 'unspecified'}
+Traffic priorities (e.g., wheelchair, kids, work-from-home): ${traffic_priorities || 'none specified'}
+Constraints: ${constraints || 'none'}
+
+Respond with valid JSON:
+{
+  "recommended_zones": [{ "zone": string, "purpose": string, "size_band": "small|medium|large", "anchor_furniture": [string] }],
+  "placement_plan": [{ "item": string, "wall_or_area": string, "rationale": string }],
+  "traffic_flow_notes": [string],
+  "natural_light_strategy": string,
+  "focal_point_treatment": string,
+  "scale_and_proportion_notes": [string],
+  "items_to_remove_or_replace": [string],
+  "items_to_consider_adding": [string],
+  "accessibility_notes": [string],
+  "summary": string
+}`;
+
+    const aiResponse = await callOpenRouter([
+      { role: 'system', content: 'You are an expert interior layout optimizer. Always respond with valid JSON.' },
+      { role: 'user', content: prompt }
+    ]);
+    const content = stripCodeBlocks(aiResponse.choices[0].message.content);
+    let parsed;
+    try {
+      const m = content.match(/\{[\s\S]*\}/);
+      parsed = m ? JSON.parse(m[0]) : { raw: content };
+    } catch { parsed = { raw: content }; }
+
+    await prisma.aIGeneration.create({
+      data: {
+        userId: req.user.id,
+        type: 'room-optimizer',
+        prompt: JSON.stringify({ roomType, dimensions, doorways, windows, focal_points, current_furniture, traffic_priorities, constraints }),
+        result: JSON.stringify(parsed),
+        status: 'completed',
+        model: process.env.OPENROUTER_MODEL || 'anthropic/claude-haiku-4.5',
+        tokens: aiResponse.usage?.total_tokens || 0,
+      },
+    }).catch(() => {});
+
+    res.json({ success: true, optimization: parsed });
+  } catch (error) {
+    console.error('Room optimizer error:', error);
+    res.status(500).json({ error: 'Failed to optimize room', message: error.message });
+  }
+});
+
+// AI: Accessibility Recommender
+router.post('/accessibility-recommender', authenticateToken, async (req, res) => {
+  try {
+    const { roomType, mobility_needs, sensory_needs, age_groups, vision, existing_features, budget } = req.body || {};
+
+    const prompt = `You are an inclusive design specialist. Recommend interior modifications and choices that improve accessibility and universal design while staying aesthetic.
+
+Room type: ${roomType || 'unspecified'}
+Mobility needs: ${mobility_needs || 'none specified'}
+Sensory needs: ${sensory_needs || 'none specified'}
+Age groups: ${age_groups || 'unspecified'}
+Vision considerations: ${vision || 'unspecified'}
+Existing features: ${existing_features || 'unspecified'}
+Budget range: ${budget || 'flexible'}
+
+Respond with valid JSON:
+{
+  "structural_recommendations": [{ "item": string, "why": string, "estimated_cost_band": "low|medium|high" }],
+  "furniture_recommendations": [{ "item": string, "why": string }],
+  "fixture_and_hardware_recommendations": [{ "item": string, "why": string }],
+  "lighting_recommendations": [string],
+  "color_and_contrast_guidance": [string],
+  "sensory_calming_strategies": [string],
+  "wayfinding_and_signage": [string],
+  "warnings_to_avoid": [string],
+  "code_or_standard_references": [string],
+  "phased_implementation_plan": [{ "phase": number, "actions": [string] }],
+  "summary": string
+}`;
+
+    const aiResponse = await callOpenRouter([
+      { role: 'system', content: 'You are an inclusive interior design expert. Always respond with valid JSON.' },
+      { role: 'user', content: prompt }
+    ]);
+    const content = stripCodeBlocks(aiResponse.choices[0].message.content);
+    let parsed;
+    try {
+      const m = content.match(/\{[\s\S]*\}/);
+      parsed = m ? JSON.parse(m[0]) : { raw: content };
+    } catch { parsed = { raw: content }; }
+
+    await prisma.aIGeneration.create({
+      data: {
+        userId: req.user.id,
+        type: 'accessibility-recommender',
+        prompt: JSON.stringify({ roomType, mobility_needs, sensory_needs, age_groups, vision, existing_features, budget }),
+        result: JSON.stringify(parsed),
+        status: 'completed',
+        model: process.env.OPENROUTER_MODEL || 'anthropic/claude-haiku-4.5',
+        tokens: aiResponse.usage?.total_tokens || 0,
+      },
+    }).catch(() => {});
+
+    res.json({ success: true, recommendations: parsed });
+  } catch (error) {
+    console.error('Accessibility recommender error:', error);
+    res.status(500).json({ error: 'Failed to generate accessibility recommendations', message: error.message });
+  }
+});
+
+// ============================================================
+// Apply pass 4 (mechanical backlog): sustainability + cost prediction
+// ============================================================
+
+function checkOpenRouterKey(res) {
+  if (!process.env.OPENROUTER_API_KEY || process.env.OPENROUTER_API_KEY === 'your-openrouter-key-here') {
+    res.status(503).json({ error: 'OpenRouter API key not configured.' });
+    return false;
+  }
+  return true;
+}
+
+// AI: Sustainability scoring of design choices
+router.post('/sustainability-score', authenticateToken, async (req, res) => {
+  try {
+    if (!checkOpenRouterKey(res)) return;
+    const { roomType, materials, furniture, finishes, region, lifespan_years_target } = req.body || {};
+
+    const prompt = `You are a sustainability and circular-economy expert in residential interiors. Score the sustainability of the proposed design choices and recommend lower-impact swaps.
+
+Room: ${roomType || 'unspecified'}
+Region (for sourcing/transport context): ${region || 'unspecified'}
+Materials list: ${materials || 'none specified'}
+Furniture list: ${furniture || 'none specified'}
+Finishes / paints / coatings: ${finishes || 'none specified'}
+Target lifespan in years: ${lifespan_years_target || 'unspecified'}
+
+Respond with valid JSON:
+{
+  "overall_score_0_to_100": number,
+  "score_band": "poor|fair|good|excellent",
+  "carbon_footprint_band": "low|medium|high|very_high",
+  "embodied_carbon_drivers": [{ "item": string, "issue": string }],
+  "operational_impact_notes": [string],
+  "lower_impact_swaps": [{ "current_item": string, "swap_to": string, "reason": string, "expected_score_lift_0_to_30": number }],
+  "circularity_recommendations": [string],
+  "voc_and_indoor_air_quality_flags": [string],
+  "longevity_and_repairability_notes": [string],
+  "certifications_to_look_for": [string],
+  "summary": string
+}`;
+
+    const aiResponse = await callOpenRouter([
+      { role: 'system', content: 'You are a sustainability auditor for interior design. Always respond with valid JSON.' },
+      { role: 'user', content: prompt }
+    ]);
+    const content = stripCodeBlocks(aiResponse.choices[0].message.content);
+    let parsed;
+    try {
+      const m = content.match(/\{[\s\S]*\}/);
+      parsed = m ? JSON.parse(m[0]) : { raw: content };
+    } catch { parsed = { raw: content }; }
+
+    await prisma.aIGeneration.create({
+      data: {
+        userId: req.user.id,
+        type: 'sustainability-score',
+        prompt: JSON.stringify({ roomType, materials, furniture, finishes, region, lifespan_years_target }),
+        result: JSON.stringify(parsed),
+        status: 'completed',
+        model: process.env.OPENROUTER_MODEL || 'anthropic/claude-haiku-4.5',
+        tokens: aiResponse.usage?.total_tokens || 0,
+      },
+    }).catch(() => {});
+
+    res.json({ success: true, sustainability: parsed });
+  } catch (error) {
+    console.error('Sustainability score error:', error);
+    res.status(500).json({ error: 'Failed to score sustainability', message: error.message });
+  }
+});
+
+// AI: Design cost prediction (heuristic, no marketplace lookups)
+router.post('/cost-prediction', authenticateToken, async (req, res) => {
+  try {
+    if (!checkOpenRouterKey(res)) return;
+    const { roomType, square_footage, style, materials, furniture, finishes, labor_market, location, quality_tier } = req.body || {};
+
+    const prompt = `You are a residential interior design cost estimator. Produce a heuristic cost prediction with itemized line bands. You do NOT have live pricing — use typical ranges for the stated quality tier and location.
+
+Room: ${roomType || 'unspecified'}
+Square footage: ${square_footage || 'unspecified'}
+Style: ${style || 'unspecified'}
+Quality tier: ${quality_tier || 'mid-range'}
+Location / labor market: ${location || labor_market || 'unspecified'}
+Materials list: ${materials || 'none specified'}
+Furniture list: ${furniture || 'none specified'}
+Finishes / paints / coatings: ${finishes || 'none specified'}
+
+Respond with valid JSON:
+{
+  "currency": "USD",
+  "total_cost_band": { "low": number, "high": number },
+  "line_items": [{ "category": string, "description": string, "low": number, "high": number, "confidence": "low|medium|high" }],
+  "labor_vs_material_split_pct": { "labor": number, "material": number, "furniture": number, "other": number },
+  "biggest_cost_drivers": [string],
+  "cost_saving_opportunities": [{ "swap": string, "expected_savings_pct": number }],
+  "premium_upgrade_options": [{ "upgrade": string, "expected_extra_cost_pct": number }],
+  "contingency_recommendation_pct": number,
+  "assumptions": [string],
+  "caveats": [string]
+}`;
+
+    const aiResponse = await callOpenRouter([
+      { role: 'system', content: 'You are a residential interior cost estimator. Always respond with valid JSON.' },
+      { role: 'user', content: prompt }
+    ]);
+    const content = stripCodeBlocks(aiResponse.choices[0].message.content);
+    let parsed;
+    try {
+      const m = content.match(/\{[\s\S]*\}/);
+      parsed = m ? JSON.parse(m[0]) : { raw: content };
+    } catch { parsed = { raw: content }; }
+
+    await prisma.aIGeneration.create({
+      data: {
+        userId: req.user.id,
+        type: 'cost-prediction',
+        prompt: JSON.stringify({ roomType, square_footage, style, materials, furniture, finishes, labor_market, location, quality_tier }),
+        result: JSON.stringify(parsed),
+        status: 'completed',
+        model: process.env.OPENROUTER_MODEL || 'anthropic/claude-haiku-4.5',
+        tokens: aiResponse.usage?.total_tokens || 0,
+      },
+    }).catch(() => {});
+
+    res.json({ success: true, cost_prediction: parsed });
+  } catch (error) {
+    console.error('Cost prediction error:', error);
+    res.status(500).json({ error: 'Failed to predict cost', message: error.message });
+  }
+});
+
+// AI: Agentic design consultant — multi-turn iteration step.
+// Body: { roomContext, currentDesign, history? (array of {role,content}), userTurn }
+// Returns next iteration with critique, revised plan, and clarifying questions.
+router.post('/design-consultant-turn', authenticateToken, async (req, res) => {
+  try {
+    if (!checkOpenRouterKey(res)) return;
+    const { roomContext, currentDesign, history, userTurn } = req.body || {};
+
+    if (!userTurn || typeof userTurn !== 'string' || userTurn.trim() === '') {
+      return res.status(400).json({ error: 'userTurn is required' });
+    }
+
+    const safeHistory = Array.isArray(history) ? history.slice(-10).map((m) => ({
+      role: m && m.role === 'assistant' ? 'assistant' : 'user',
+      content: typeof m?.content === 'string' ? m.content : ''
+    })) : [];
+
+    const systemContent = `You are an agentic interior design consultant guiding a multi-turn design iteration.
+
+For each turn:
+- React to the user's latest message
+- Critique the current proposed design (what works, what risks it creates)
+- Produce a revised design plan that incorporates the user's input
+- Ask 1-3 targeted clarifying questions to drive the next iteration
+- Always respond with valid JSON.`;
+
+    const userPrompt = `Room context: ${roomContext || 'unspecified'}
+Current design (latest accepted state):
+${currentDesign || 'no current design captured yet'}
+
+User's latest message:
+${userTurn}
+
+Respond with valid JSON:
+{
+  "critique_of_current_design": [string],
+  "revised_design": {
+    "headline": string,
+    "key_changes_from_previous": [string],
+    "layout_or_zoning_notes": string,
+    "palette_and_materials": [string],
+    "lighting_plan": [string],
+    "must_keep_from_user_intent": [string]
+  },
+  "tradeoffs": [{ "decision": string, "tradeoff": string }],
+  "clarifying_questions": [string],
+  "agent_self_assessment": { "confidence_0_to_100": number, "remaining_unknowns": [string] }
+}`;
+
+    const aiResponse = await callOpenRouter([
+      { role: 'system', content: systemContent },
+      ...safeHistory,
+      { role: 'user', content: userPrompt }
+    ]);
+    const content = stripCodeBlocks(aiResponse.choices[0].message.content);
+    let parsed;
+    try {
+      const m = content.match(/\{[\s\S]*\}/);
+      parsed = m ? JSON.parse(m[0]) : { raw: content };
+    } catch { parsed = { raw: content }; }
+
+    await prisma.aIGeneration.create({
+      data: {
+        userId: req.user.id,
+        type: 'design-consultant-turn',
+        prompt: JSON.stringify({ roomContext, userTurn }),
+        result: JSON.stringify(parsed),
+        status: 'completed',
+        model: process.env.OPENROUTER_MODEL || 'anthropic/claude-haiku-4.5',
+        tokens: aiResponse.usage?.total_tokens || 0,
+      },
+    }).catch(() => {});
+
+    res.json({ success: true, turn: parsed });
+  } catch (error) {
+    console.error('Design consultant turn error:', error);
+    res.status(500).json({ error: 'Failed to run consultant turn', message: error.message });
+  }
+});
+
 module.exports = router;
