@@ -11,7 +11,27 @@ import {
 import ComparisonSlider from './components/ComparisonSlider';
 import ComparisonSideBySide from './components/ComparisonSideBySide';
 import RoomViewer from './components/RoomViewer';
+import AdvancedAITools from './components/AdvancedAITools';
+import Pass5Tools from './components/Pass5Tools';
 import api from './api';
+
+// === Batch 04 Gaps & Frontend Mounts ===
+import CfAgenticDesignConsultantGeneratingCus from './pages/CfAgenticDesignConsultantGeneratingCus';
+import CfRoomLayoutOptimizationConsideringTra from './pages/CfRoomLayoutOptimizationConsideringTra';
+import CfSustainabilityScoringTrackingCarbonF from './pages/CfSustainabilityScoringTrackingCarbonF';
+import CfVirtualVr3dWalkthroughForImmersiveV from './pages/CfVirtualVr3dWalkthroughForImmersiveV';
+import CfDesignCostPredictionAcrossFurniture from './pages/CfDesignCostPredictionAcrossFurniture';
+import CfTrendStylePredictionForEarlyAdoptio from './pages/CfTrendStylePredictionForEarlyAdoptio';
+import GapNoTrendForecasterEndpoint from './pages/GapNoTrendForecasterEndpoint';
+import GapNoRoomLayoutOptimizer from './pages/GapNoRoomLayoutOptimizer';
+import GapNoAccessibilityRecommender from './pages/GapNoAccessibilityRecommender';
+import GapNoSustainabilityScoringAi from './pages/GapNoSustainabilityScoringAi';
+import GapLiveVendorcontractorIntegrationsStill from './pages/GapLiveVendorcontractorIntegrationsStill';
+import GapNoNativeArMobileAppOnly from './pages/GapNoNativeArMobileAppOnly';
+import GapNo3dModelLibraryExpansionBeyond from './pages/GapNo3dModelLibraryExpansionBeyond';
+import GapNoNotificationsModule0References from './pages/GapNoNotificationsModule0References';
+import GapNoWebhookSurface from './pages/GapNoWebhookSurface';
+import GapNoFileUploadPipelineForFloor from './pages/GapNoFileUploadPipelineForFloor';
 
 // Auth Context
 const AuthContext = createContext(null);
@@ -4047,6 +4067,8 @@ const App = () => {
           <Route path="/palettes/new" element={<ProtectedRoute><Layout><CreatePalettePage /></Layout></ProtectedRoute>} />
           <Route path="/palettes/:id" element={<ProtectedRoute><Layout><DetailPage endpoint="/palettes" title="Palette" /></Layout></ProtectedRoute>} />
           <Route path="/ai-tools" element={<ProtectedRoute><Layout><AIToolsPage /></Layout></ProtectedRoute>} />
+          <Route path="/advanced-ai" element={<ProtectedRoute><Layout><AdvancedAITools /></Layout></ProtectedRoute>} />
+          <Route path="/pass5-tools" element={<ProtectedRoute><Layout><Pass5Tools /></Layout></ProtectedRoute>} />
           <Route path="/ar" element={<ProtectedRoute><Layout><ARPage /></Layout></ProtectedRoute>} />
           <Route path="/ar/:id" element={<ProtectedRoute><Layout><ARDetailPage /></Layout></ProtectedRoute>} />
           <Route path="/shopping" element={<ProtectedRoute><Layout><ShoppingListPage /></Layout></ProtectedRoute>} />
@@ -4057,6 +4079,24 @@ const App = () => {
           <Route path="/materials" element={<ProtectedRoute><Layout><ListPage title="Materials" endpoint="/materials" type="materials" /></Layout></ProtectedRoute>} />
           <Route path="/materials/:id" element={<ProtectedRoute><Layout><DetailPage endpoint="/materials" title="Material" /></Layout></ProtectedRoute>} />
           <Route path="/subscription" element={<ProtectedRoute><Layout><SubscriptionPage /></Layout></ProtectedRoute>} />
+          {/* // === Batch 04 Gaps & Frontend Mounts === */}
+          <Route path="/cf-agentic-design-consultant-generating-cus" element={<CfAgenticDesignConsultantGeneratingCus />} />
+          <Route path="/cf-room-layout-optimization-considering-tra" element={<CfRoomLayoutOptimizationConsideringTra />} />
+          <Route path="/cf-sustainability-scoring-tracking-carbon-f" element={<CfSustainabilityScoringTrackingCarbonF />} />
+          <Route path="/cf-virtual-vr3d-walkthrough-for-immersive-v" element={<CfVirtualVr3dWalkthroughForImmersiveV />} />
+          <Route path="/cf-design-cost-prediction-across-furniture-" element={<CfDesignCostPredictionAcrossFurniture />} />
+          <Route path="/cf-trend-style-prediction-for-early-adoptio" element={<CfTrendStylePredictionForEarlyAdoptio />} />
+          <Route path="/gap-no-trend-forecaster-endpoint" element={<GapNoTrendForecasterEndpoint />} />
+          <Route path="/gap-no-room-layout-optimizer" element={<GapNoRoomLayoutOptimizer />} />
+          <Route path="/gap-no-accessibility-recommender" element={<GapNoAccessibilityRecommender />} />
+          <Route path="/gap-no-sustainability-scoring-ai" element={<GapNoSustainabilityScoringAi />} />
+          <Route path="/gap-live-vendorcontractor-integrations-still" element={<GapLiveVendorcontractorIntegrationsStill />} />
+          <Route path="/gap-no-native-ar-mobile-app-only" element={<GapNoNativeArMobileAppOnly />} />
+          <Route path="/gap-no-3d-model-library-expansion-beyond" element={<GapNo3dModelLibraryExpansionBeyond />} />
+          <Route path="/gap-no-notifications-module-0-references" element={<GapNoNotificationsModule0References />} />
+          <Route path="/gap-no-webhook-surface" element={<GapNoWebhookSurface />} />
+          <Route path="/gap-no-file-upload-pipeline-for-floor" element={<GapNoFileUploadPipelineForFloor />} />
+
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </AuthProvider>
