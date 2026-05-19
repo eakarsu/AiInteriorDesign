@@ -32,6 +32,7 @@ import GapNo3dModelLibraryExpansionBeyond from './pages/GapNo3dModelLibraryExpan
 import GapNoNotificationsModule0References from './pages/GapNoNotificationsModule0References';
 import GapNoWebhookSurface from './pages/GapNoWebhookSurface';
 import GapNoFileUploadPipelineForFloor from './pages/GapNoFileUploadPipelineForFloor';
+import CustomViewsPage from './pages/CustomViewsPage';
 
 // Auth Context
 const AuthContext = createContext(null);
@@ -408,6 +409,7 @@ const Layout = ({ children }) => {
     { path: '/inspirations', icon: Image, label: 'Inspirations' },
     { path: '/materials', icon: Box, label: 'Materials' },
     { path: '/subscription', icon: CreditCard, label: 'Subscription' },
+    { path: '/custom-views', icon: Eye, label: 'Design Views' },
   ];
 
   return (
@@ -4096,6 +4098,7 @@ const App = () => {
           <Route path="/gap-no-notifications-module-0-references" element={<GapNoNotificationsModule0References />} />
           <Route path="/gap-no-webhook-surface" element={<GapNoWebhookSurface />} />
           <Route path="/gap-no-file-upload-pipeline-for-floor" element={<GapNoFileUploadPipelineForFloor />} />
+          <Route path="/custom-views" element={<ProtectedRoute><Layout><CustomViewsPage /></Layout></ProtectedRoute>} />
 
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

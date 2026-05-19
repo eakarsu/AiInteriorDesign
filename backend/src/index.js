@@ -70,6 +70,9 @@ app.use('/api/integrations', integrationRoutes);
 app.use('/api/sustainability', require('./routes/sustainabilityScoring'));
 app.use('/api/room-layout', require('./routes/roomLayoutOptimizer'));
 
+// === Custom Views (Design Views) — mounted BEFORE 404 handler ===
+app.use('/api/custom-views', require('../routes/customViews'));
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
