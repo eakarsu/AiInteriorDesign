@@ -33,6 +33,12 @@ import GapNoNotificationsModule0References from './pages/GapNoNotificationsModul
 import GapNoWebhookSurface from './pages/GapNoWebhookSurface';
 import GapNoFileUploadPipelineForFloor from './pages/GapNoFileUploadPipelineForFloor';
 import CustomViewsPage from './pages/CustomViewsPage';
+import DesignCodeCompliance from './pages/DesignCodeCompliance';
+
+import CodexCustomVizFeature from './pages/CodexCustomVizFeature';
+import CodexOperationsFeature from './pages/CodexOperationsFeature';
+
+import TimelineView from './pages/TimelineView';
 
 // Auth Context
 const AuthContext = createContext(null);
@@ -4053,6 +4059,10 @@ const App = () => {
     <BrowserRouter>
       <AuthProvider>
         <Routes>
+        <Route path="/insights/timeline" element={<ProtectedRoute><TimelineView /></ProtectedRoute>} />
+        <Route path="/codex/custom-viz" element={<ProtectedRoute><CodexCustomVizFeature /></ProtectedRoute>} />
+        <Route path="/codex/operations" element={<ProtectedRoute><CodexOperationsFeature /></ProtectedRoute>} />
+
           <Route path="/login" element={<LoginPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
@@ -4099,6 +4109,7 @@ const App = () => {
           <Route path="/gap-no-webhook-surface" element={<GapNoWebhookSurface />} />
           <Route path="/gap-no-file-upload-pipeline-for-floor" element={<GapNoFileUploadPipelineForFloor />} />
           <Route path="/custom-views" element={<ProtectedRoute><Layout><CustomViewsPage /></Layout></ProtectedRoute>} />
+          <Route path="/design-code-compliance" element={<ProtectedRoute><Layout><DesignCodeCompliance /></Layout></ProtectedRoute>} />
 
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

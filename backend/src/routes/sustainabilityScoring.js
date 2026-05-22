@@ -1,9 +1,8 @@
 // Sustainability scoring tracking carbon footprint of material choices.
 // Audit: batch_04.md / AiInteriorDesign / Custom Feature Suggestions #3
 const express = require('express');
-const fetch = require('node-fetch');
 const { PrismaClient } = require('@prisma/client');
-const authMiddleware = require('../middleware/auth');
+const { authenticateToken: authMiddleware } = require('../middleware/auth');
 
 const prisma = new PrismaClient();
 const router = express.Router();

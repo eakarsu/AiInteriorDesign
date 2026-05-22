@@ -69,6 +69,7 @@ app.use('/api/marketplace', marketplaceRoutes);
 app.use('/api/integrations', integrationRoutes);
 app.use('/api/sustainability', require('./routes/sustainabilityScoring'));
 app.use('/api/room-layout', require('./routes/roomLayoutOptimizer'));
+app.use('/api/design-code-compliance', require('./routes/designCodeCompliance'));
 
 // === Custom Views (Design Views) — mounted BEFORE 404 handler ===
 app.use('/api/custom-views', require('../routes/customViews'));

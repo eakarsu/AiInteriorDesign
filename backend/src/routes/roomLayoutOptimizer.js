@@ -1,9 +1,8 @@
 // Room-layout optimization considering traffic flow, light, and focal points.
 // Audit: batch_04.md / AiInteriorDesign / Custom Feature Suggestions #2
 const express = require('express');
-const fetch = require('node-fetch');
 const { PrismaClient } = require('@prisma/client');
-const authMiddleware = require('../middleware/auth');
+const { authenticateToken: authMiddleware } = require('../middleware/auth');
 
 const prisma = new PrismaClient();
 const router = express.Router();
