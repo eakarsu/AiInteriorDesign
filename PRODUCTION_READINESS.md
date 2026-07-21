@@ -1,0 +1,7 @@
+# Governed interior-design plan
+
+The supported API is `/api/governance`. It records explicit preferences, consent, source versions, editable recommendations, safety/accessibility evaluation, budget and vendor-quote review, owner approval, procurement receipts, installation follow-up, feedback correction, revocation, and deletion. It never purchases, books a contractor, controls a device, or exposes household data autonomously.
+
+Apply `backend/migrations/001_governed_interior_design_plan.sql` separately. Pre-provision tenant/household memberships. Calendar, commerce, read-only device, content, vendor/contractor, storage, notification, and identity workers remain disabled until least-privilege scopes, credentials, typed contracts, revocation/deletion propagation, idempotency, retries, signed receipts, and recovery pass. This durable vendor/contractor contract replaces the generated gap on the supported path.
+
+Use `.env.example`; production rejects weak secrets, wildcard CORS, demo/mock/provider flags, and startup mutation. `start.sh` never installs, seeds, migrates, resets data, or reclaims ports. Representative-user evaluation must cover relevance, diversity, cold start, preference drift, accessibility, structural/electrical/child safety, age protections, spend limits, failure behavior, export/delete, and follow-through. No purchase, booking, device action, or vendor integration was performed here.

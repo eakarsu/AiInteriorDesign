@@ -3,6 +3,10 @@ const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
 
 const prisma = new PrismaClient();
+if (process.env.NODE_ENV === 'production' || process.env.ALLOW_DEMO_SEED !== 'true') throw new Error('Demo seed is disabled outside an explicitly approved non-production database.');
+const demoEmail = String(process.env.DEMO_EMAIL || '').trim().toLowerCase();
+const demoPassword = String(process.env.DEMO_PASSWORD || '');
+if (!demoEmail || demoPassword.length < 12) throw new Error('DEMO_EMAIL and a 12+ character DEMO_PASSWORD are required.');
 
 async function seed() {
   console.log('Starting database seed...');
@@ -26,10 +30,10 @@ async function seed() {
 
   // Create demo user
   console.log('Creating demo user...');
-  const hashedPassword = await bcrypt.hash(process.env.DEMO_PASSWORD || 'demo123456', 10);
+  const hashedPassword = await bcrypt.hash(demoPassword, 12);
   const demoUser = await prisma.user.create({
     data: {
-      email: process.env.DEMO_EMAIL || 'demo@aiinterior.com',
+      email: demoEmail,
       password: hashedPassword,
       name: 'Demo User',
       role: 'user',
@@ -341,8 +345,8 @@ async function seed() {
 ║  AI Generations:     ${(aiGenerations.length + additionalAIGenerations.length).toString().padEnd(10)}                             ║
 ╠═══════════════════════════════════════════════════════════════╣
 ║  Demo credentials:                                            ║
-║    Email:    ${(process.env.DEMO_EMAIL || 'demo@aiinterior.com').padEnd(36)}     ║
-║    Password: ${(process.env.DEMO_PASSWORD || 'demo123456').padEnd(36)}     ║
+║    Email:    ${demoEmail.padEnd(36)}     ║
+║    Password: ${'[injected; not displayed]'.padEnd(36)}     ║
 ╚═══════════════════════════════════════════════════════════════╝
   `);
 }

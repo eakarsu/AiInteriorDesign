@@ -5,11 +5,13 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
+    "test": "node --test governance/*.test.cjs",
     "dev": "nodemon src/index.js",
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
     "db:seed": "node src/seed.js",
-    "db:reset": "prisma migrate reset --force && node src/seed.js"
+    "db:reset": "prisma migrate reset --force && node src/seed.js",
+    "create-admin": "node scripts/create-admin.js"
   },
   "dependencies": {
     "@prisma/client": "^5.10.0",
