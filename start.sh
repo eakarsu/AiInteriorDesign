@@ -3,6 +3,10 @@ set -euo pipefail
 
 project_dir="$(cd "$(dirname "$0")" && pwd)"
 if [[ "${NODE_ENV:-}" == test && -n "${RUNTIME_PROJECT_SOURCE:-}" && -d "${RUNTIME_PROJECT_SOURCE:-}" ]]; then project_dir="$(cd "$RUNTIME_PROJECT_SOURCE" && pwd)"; fi
+[[ -f "$project_dir/.env" ]] || { echo "Missing .env" >&2; exit 1; }
+set -a
+. "$project_dir/.env"
+set +a
 : "${BACKEND_PORT:?BACKEND_PORT is required}"
 : "${FRONTEND_PORT:?FRONTEND_PORT is required}"
 : "${DATABASE_URL:?DATABASE_URL is required}"
