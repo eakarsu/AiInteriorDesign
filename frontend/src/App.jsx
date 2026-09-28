@@ -196,7 +196,7 @@ const LoginPage = () => {
               className="w-full bg-gray-100 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-200 transition flex items-center justify-center gap-2"
             >
               <Sparkles className="w-5 h-5" />
-              Fill Demo Credentials
+              Auto Fill Demo Credentials
             </button>
             <p className="text-center text-gray-500 text-sm mt-3">
               Click to auto-fill demo account details
